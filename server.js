@@ -63,15 +63,17 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
+// Static files
 app.use(express.static(path.join(__dirname, "public")));
 
+// Example answers API
 let answers = [{ id: 1, text: "Answer 1" }];
 app.get("/answers", (req, res) => res.json(answers));
 
-// SPA fallback for all other routes
+// SPA fallback: send index.html for all other routes
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-export default app; // ✅ important for Vercel serverless
-
+// ✅ Important for Vercel serverless: do NOT use app.listen()
+export default app;
