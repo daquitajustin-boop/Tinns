@@ -54,13 +54,24 @@ app.post("/submit", async (req, res) => {
   }
 });
 
-// API to get all answers
+import express from "express";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const app = express();
+
+app.use(express.static(path.join(__dirname, "public")));
+
+let answers = [{ id: 1, text: "Answer 1" }];
 app.get("/answers", (req, res) => res.json(answers));
 
-// Serve index.html for all other routes (SPA support)
+// SPA fallback for all other routes
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-// Start server
-app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+export default app; // ✅ important for Vercel serverless
+
