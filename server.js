@@ -1,14 +1,25 @@
 import express from "express";
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
 
 dotenv.config();
 
-const app = express();
-const answers = [];
+// Required for __dirname in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
+// Create Express app
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Middleware
 app.use(express.json());
-app.use(express.static("public"));
+app.use(express.static(path.join(__dirname, "public")));
+
+// Store answers
+let answers = [{ id: 1, text: "Answer 1" }];
 
 // Gmail transporter
 const transporter = nodemailer.createTransport({
@@ -19,6 +30,7 @@ const transporter = nodemailer.createTransport({
   }
 });
 
+// API to submit answer + send email
 app.post("/submit", async (req, res) => {
   const { question, answer } = req.body;
 
@@ -42,29 +54,13 @@ app.post("/submit", async (req, res) => {
   }
 });
 
+// API to get all answers
 app.get("/answers", (req, res) => res.json(answers));
 
-// If using ES modules ("type": "module" in package.json)
-import express from "express";
-import path from "path";
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-app = express();
-const PORT = process.env.PORT || 3000;
-
-// Serve static files
-app.use(express.static(path.join(__dirname, "public")));
-
-// Optional API
- answers = [{ id: 1, text: "Answer 1" }];
-app.get("/answers", (req, res) => res.json(answers));
-
-// All other routes → index.html
-app.get("*", (req, res) => res.sendFile(path.join(__dirname, "public", "index.html")));
+// Serve index.html for all other routes (SPA support)
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
 
 // Start server
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
+app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
