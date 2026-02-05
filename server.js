@@ -53,17 +53,16 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
-// Serve static files
+// Serve static files from ../public
 app.use(express.static(path.join(__dirname, "../public")));
 
-// Example API
+// API route
 const answers = [{ id: 1, text: "Answer 1" }];
 app.get("/answers", (req, res) => res.json(answers));
 
-// All other routes → index.html
+// Send index.html for all other routes
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "../public/index.html"));
 });
 
 export default app;
-
