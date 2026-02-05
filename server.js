@@ -1,36 +1,21 @@
 import express from "express";
-import nodemailer from "nodemailer";
-import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
+import nodemailer from "nodemailer";
+import dotenv from "dotenv";
 
 dotenv.config();
 
-// Required for __dirname in ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Create Express app
 const app = express();
-const PORT = process.env.PORT || 3000;
-
-// Middleware
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "public")));
 
-// Store answers
+// Example answers array (in-memory, resets per serverless invocation)
 let answers = [{ id: 1, text: "Answer 1" }];
 
-// Gmail transporter
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.MAIL_USER,
-    pass: process.env.MAIL_PASS
-  }
-});
-
-// API to submit answer + send email
+// POST /submit → send email
 app.post("/submit", async (req, res) => {
   const { question, answer } = req.body;
 
@@ -41,6 +26,14 @@ app.post("/submit", async (req, res) => {
   answers.push({ question, answer, date: new Date() });
 
   try {
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.MAIL_USER,
+        pass: process.env.MAIL_PASS
+      }
+    });
+
     await transporter.sendMail({
       from: `"Test Server" <${process.env.MAIL_USER}>`,
       to: process.env.MAIL_USER,
@@ -54,26 +47,10 @@ app.post("/submit", async (req, res) => {
   }
 });
 
-import express from "express";
-import path from "path";
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const app = express();
-
-// Static files
-app.use(express.static(path.join(__dirname, "public")));
-
-// Example answers API
-let answers = [{ id: 1, text: "Answer 1" }];
-app.get("/answers", (req, res) => res.json(answers));
-
-// SPA fallback: send index.html for all other routes
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
+// GET /answers → returns JSON
+app.get("/answers", (req, res) => {
+  res.json(answers);
 });
 
-// ✅ Important for Vercel serverless: do NOT use app.listen()
+// Export Express app for Vercel serverless
 export default app;
