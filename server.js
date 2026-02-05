@@ -44,6 +44,7 @@ app.post("/submit", async (req, res) => {
 
 app.get("/answers", (req, res) => res.json(answers));
 
+// If using ES modules ("type": "module" in package.json)
 import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -51,18 +52,19 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const app = express();
+app = express();
+const PORT = process.env.PORT || 3000;
 
-// Serve static files from ../public
-app.use(express.static(path.join(__dirname, "../public")));
+// Serve static files
+app.use(express.static(path.join(__dirname, "public")));
 
-// API route
-const answers = [{ id: 1, text: "Answer 1" }];
+// Optional API
+ answers = [{ id: 1, text: "Answer 1" }];
 app.get("/answers", (req, res) => res.json(answers));
 
-// Send index.html for all other routes
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "../public/index.html"));
-});
+// All other routes → index.html
+app.get("*", (req, res) => res.sendFile(path.join(__dirname, "public", "index.html")));
 
-export default app;
+// Start server
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
